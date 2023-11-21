@@ -1,0 +1,31 @@
+name: Deploy
+on:
+  workflow_run:
+    workflows: ["Code check"]
+    branches: [main]
+    types:
+      - completed
+env:
+  VITE_GITHUB_API_ENDPOINT: https://api.github.com/graphql
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Reusable Action for PNPM and NX
+        uses: dipiash/pnpm-nx-reusable-action@v8
+
+      - name: Install and Build 🔧
+        run: npx nx build main
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4.3.0
+        with:
+          branch: gh-pages
+          folder: apps/main/dist
